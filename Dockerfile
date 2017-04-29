@@ -50,6 +50,8 @@ RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
 
 RUN echo "Kylo Installation complete"
 
+RUN echo "PATH=$PATH:/usr/java/default/bin:/usr/local/spark/bin:/usr/local/hadoop/bin" >> /etc/profile
+RUN echo "export PATH" >> /etc/profile
 #COPY ./setup_kylo.sh .
 #RUN chmod +x setup_kylo.sh && ./setup_kylo.sh
 VOLUME /var/dropzone
