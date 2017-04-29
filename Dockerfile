@@ -54,4 +54,5 @@ RUN echo "Kylo Installation complete"
 #RUN chmod +x setup_kylo.sh && ./setup_kylo.sh
 VOLUME /var/dropzone
 VOLUME /var/sampledata
+CMD 'service mysql start && service elasticsearch start && service activemq start && service nifi start && bash'
 EXPOSE 8400
