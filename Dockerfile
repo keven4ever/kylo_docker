@@ -50,11 +50,30 @@ RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
 
 RUN echo "Kylo Installation complete"
 
-RUN echo "PATH=$PATH:/usr/java/default/bin:/usr/local/spark/bin:/usr/local/hadoop/bin" >> /etc/profile
-RUN echo "export PATH" >> /etc/profile
+# add spark and hadoop path to PATH env variable for kylo user
+RUN echo "export PATH=$PATH:/usr/java/default/bin:/usr/local/spark/bin:/usr/local/hadoop/bin" >> /etc/profile
 #COPY ./setup_kylo.sh .
 #RUN chmod +x setup_kylo.sh && ./setup_kylo.sh
+
+# Install hive
+RUN wget http://apache.mirrors.spacedump.net/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz
+RUN tar xvf apache-hive-2.1.1-bin.tar.gz
+RUN rm ./apache-hive-2.1.1-bin.tar.gz
+RUN mv ./apache-hive-2.1.1-bin /usr/local/
+COPY ./hive-site.xml /usr/local/apache-hive-2.1.1-bin/conf
+RUN echo "export HIVE_HOME=/usr/local/apache-hive-2.1.1-bin" >> /etc/profile
+RUN echo "export PATH=$PATH:$HIVE_HOME/bin">> /etc/profile
+RUN groupadd supergroup
+RUN usermod -a -G supergroup kylo
+RUN usermod -a -G supergroup nifi
+RUN echo "HADOOP_HOME=/usr/local/hadoop" >> /usr/local/apache-hive-2.1.1-bin/bin/hive-config.sh
+#RUN hadoop dfs -mkdir -p /user/hive/warehouse
+#RUN hadoop dfs -chmod 777 /user/hive/warehouse
+#RUN hadoop dfs -chown kylo:kylo /user/hive/warehouse
+RUN wget http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && mv mysql-connector-java-5.1.41.jar /usr/local/apache-hive-2.1.1-bin/lib/
+RUN service mysql start && mysql -uroot -phadoop -e "CREATE DATABASE hive;" && mysql -uroot -phadoop hive < /usr/local/apache-hive-2.1.1-bin/scripts/metastore/upgrade/mysql/hive-schema-2.1.0.mysql.sql
+
 VOLUME /var/dropzone
 VOLUME /var/sampledata
-CMD 'service mysql start && service elasticsearch start && service activemq start && service nifi start && bash'
+CMD 'service mysql start && service elasticsearch start && service activemq start && service nifi start &&  hadoop dfs -mkdir -p /user/hive/warehouse && hadoop dfs -chown kylo:kylo /user/hive/warehouse &&bash'
 EXPOSE 8400
