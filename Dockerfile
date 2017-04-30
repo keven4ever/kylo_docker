@@ -71,9 +71,9 @@ RUN echo "HADOOP_HOME=/usr/local/hadoop" >> /usr/local/apache-hive-2.1.1-bin/bin
 #RUN hadoop dfs -chmod 777 /user/hive/warehouse
 #RUN hadoop dfs -chown kylo:kylo /user/hive/warehouse
 RUN wget http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && mv mysql-connector-java-5.1.41.jar /usr/local/apache-hive-2.1.1-bin/lib/
-#RUN service mysql start && mysql -uroot -phadoop -e "CREATE DATABASE hive;" && mysql -uroot -phadoop hive < /usr/local/apache-hive-2.1.1-bin/scripts/metastore/upgrade/mysql/hive-schema-2.1.0.mysql.sql
+RUN service mysql start && cd /usr/local/apache-hive-2.1.1-bin/scripts/metastore/upgrade/mysql/ && mysql -uroot -phadoop -e "CREATE DATABASE hive;" && mysql -uroot -phadoop hive < ./hive-schema-2.1.0.mysql.sql
 
 VOLUME /var/dropzone
 VOLUME /var/sampledata
-CMD 'service mysql start && service elasticsearch start && service activemq start && service nifi start &&  hadoop dfs -mkdir -p /user/hive/warehouse && hadoop dfs -chown kylo:kylo /user/hive/warehouse &&bash'
+CMD 'service mysql start && service elasticsearch start && service activemq start && service nifi start && bash'
 EXPOSE 8400
