@@ -62,18 +62,28 @@ RUN rm ./apache-hive-2.1.1-bin.tar.gz
 RUN mv ./apache-hive-2.1.1-bin /usr/local/
 COPY ./hive-site.xml /usr/local/apache-hive-2.1.1-bin/conf
 RUN echo "export HIVE_HOME=/usr/local/apache-hive-2.1.1-bin" >> /etc/profile
-RUN echo "export PATH=$PATH:$HIVE_HOME/bin">> /etc/profile
+RUN echo "export PATH=$PATH:/usr/local/apache-hive-2.1.1-bin/bin">> /etc/profile
 RUN groupadd supergroup
 RUN usermod -a -G supergroup kylo
 RUN usermod -a -G supergroup nifi
 RUN echo "HADOOP_HOME=/usr/local/hadoop" >> /usr/local/apache-hive-2.1.1-bin/bin/hive-config.sh
 #RUN hadoop dfs -mkdir -p /user/hive/warehouse
-#RUN hadoop dfs -chmod 777 /user/hive/warehouse
+#RUN hadoop dfs -chown kylo /user/hive/warehouse
 #RUN hadoop dfs -chown kylo:kylo /user/hive/warehouse
 RUN wget http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.41/mysql-connector-java-5.1.41.jar && mv mysql-connector-java-5.1.41.jar /usr/local/apache-hive-2.1.1-bin/lib/
+RUN cp /usr/local/hadoop/etc/hadoop/hdfs-site.xml /usr/local/spark/conf
+RUN cp /usr/local/apache-hive-2.1.1-bin/conf/hive-site.xml /usr/local/spark/conf
+RUN cp /usr/local/apache-hive-2.1.1-bin/lib/mysql-connector-java-5.1.41.jar /usr/local/spark/lib
+RUN echo "spark.executor.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf
+RUN echo "spark.driver.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf
 RUN service mysql start && cd /usr/local/apache-hive-2.1.1-bin/scripts/metastore/upgrade/mysql/ && mysql -uroot -phadoop -e "CREATE DATABASE hive;" && mysql -uroot -phadoop hive < ./hive-schema-2.1.0.mysql.sql
 
 VOLUME /var/dropzone
 VOLUME /var/sampledata
-CMD 'service mysql start && service elasticsearch start && service activemq start && service nifi start && bash'
+CMD 'service mysql start \
+&& service elasticsearch start \
+&& service activemq start && service nifi start \
+&& cp /usr/local/hadoop/etc/hadoop/core-site.xml /usr/local/spark/conf \
+&& echo "spark.executor.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf \
+&& echo "spark.driver.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf && bash'
 EXPOSE 8400
