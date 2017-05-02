@@ -34,7 +34,7 @@ docker run -it -p 8400:8400 -v <local directory to be mapped>:/var/dropzone kylo
 ```
 3.after container started, start hive2: 
 ```
-/usr/local/hive/bin/hiveserver2 >>/var/log/hive 2>&1 &
+hiveserver2 --hiveconf hive.root.logger=FINEST,console&
 /opt/kylo/start-kylo-apps.sh
 ```
 4.after few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig

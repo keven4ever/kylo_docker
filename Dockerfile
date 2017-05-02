@@ -89,14 +89,18 @@ RUN cp /usr/local/apache-hive-2.1.1-bin/lib/mysql-connector-java-5.1.41.jar /opt
 VOLUME /var/dropzone
 VOLUME /var/sampledata
 
+COPY core-site.xml.template2 /usr/local/hadoop/etc/hadoop/
+
+
 # be careful below (1) we need to copy hadoop core-site.xml to spark folder when run container since the hostname is generated at this stage and needs to available in core-site.xml.
 # (2) Somehow spark-defaults.conf always overwriten by some process, so we need to append mysql driver when run the container.
 # (3) we need to first start hive than start spark since spark sql always generate hive 1.2 schema and hive2 will have compatible issue with it.
-CMD 'service mysql start \
-&& service elasticsearch start \
-&& service activemq start && service nifi start \
+CMD 'service mysql start && service elasticsearch start && service activemq start && service nifi start \
 && cp /usr/local/hadoop/etc/hadoop/core-site.xml /usr/local/spark/conf \
 && echo "spark.executor.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf \
 && echo "spark.driver.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf \
+&& sed s/HOSTNAME/$HOSTNAME/ /usr/local/hadoop/etc/hadoop/core-site.xml.template2 > /usr/local/hadoop/etc/hadoop/core-site.xml \
+&& /usr/local/hadoop/sbin/stop-dfs.sh && /usr/local/hadoop/sbin/start-dfs.sh \
+&& source /etc/profile \
 && bash'
 EXPOSE 8400
