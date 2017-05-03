@@ -3,14 +3,9 @@ RUN /bin/bash -c 'yum -y install wget java-1.8.0-openjdk-headless.x86_64; exit 0
 COPY ./MariaDB.repo /etc/yum.repos.d/
 COPY ./setup_mysql.sh .
 RUN chmod +x setup_mysql.sh && ./setup_mysql.sh
-#RUN /bin/bash -c 'yum install -y mariadb mariadb-server;\
-#service mysql start; \
-#chkconfig mysql on'
-#RUN service mysql start && sleep 5 && mysql -uroot -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('hadoop'); FLUSH PRIVILEGES;"  && mysql -uroot -phadoop -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'hadoop'"
 #RUN /bin/bash -c 'useradd -r -m -s /bin/bash nifi; \
 #useradd -r -m -s /bin/bash kylo; \
 #useradd -r -m -s /bin/bash activemq'
-#RUN wget http://bit.ly/2oVaQJE -O kylo-0.8.0.1.rpm && rpm -ivh kylo-0.8.0.1.rpm && rm kylo-0.8.0.1.rpm
 
 RUN /bin/bash -c 'useradd -r -m -s /bin/bash nifi; \
 useradd -r -m -s /bin/bash kylo; \
@@ -40,13 +35,6 @@ RUN chmod 774 /var/dropzone/
 RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
 
 COPY sample_data/* /var/sampledata/
-
-# echo "Moving sample files"
-# mv /tmp/allevents.csv /var/sampledata
-# mv /tmp/userdata2.csv /var/sampledata
-# mv /tmp/userdata6.csv /var/sampledata
-# mv /tmp/venue.csv /var/sampledata
-# mv /tmp/toys.sql /var/sampledata
 
 RUN chown -R kylo:kylo /var/sampledata
 
@@ -91,9 +79,6 @@ RUN chkconfig --add /etc/init.d/hive-server2
 RUN cp /usr/local/hadoop/etc/hadoop/hdfs-site.xml /usr/local/spark/conf
 RUN cp /usr/local/hive/conf/hive-site.xml /usr/local/spark/conf
 RUN cp /usr/local/hive/lib/mysql-connector-java-5.1.41.jar /usr/local/spark/lib
-# These two steps are for hive integration when use spark-shell directly., kylo-spark-shell managers classpath seperatly, see https://github.com/Teradata/kylo/blob/62037ddf09df0b9bff73360caa576ee7359a63aa/install/src/main/scripts/post-install.sh
-#RUN echo "spark.executor.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf
-#RUN echo "spark.driver.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf
 # Make mysql driver available to kylo-spark-shell
 RUN cp /usr/local/apache-hive-2.1.1-bin/lib/mysql-connector-java-5.1.41.jar /opt/nifi/mysql/
 # ----- Spark-Hive integration finished ---------
