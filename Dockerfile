@@ -34,7 +34,7 @@ RUN echo "Install Kylo" && service mysql start && /opt/kylo/setup/nifi/install-k
 RUN rm -f /opt/nifi/nifi-1.0.0-bin.tar.gz
 
 RUN echo "Creating the dropzone folder" && mkdir -p /var/dropzone
-RUN chown nifi /var/dropzone
+RUN chown nifi:nifi /var/dropzone
 RUN chmod 774 /var/dropzone/
 
 RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
@@ -48,12 +48,13 @@ COPY sample_data/* /var/sampledata/
 # mv /tmp/venue.csv /var/sampledata
 # mv /tmp/toys.sql /var/sampledata
 
-RUN chown -R kylo /var/sampledata
-
-RUN echo "Kylo Installation complete"
+RUN chown -R kylo:kylo /var/sampledata
 
 ENV KYLO_HOME=/opt/kylo
 ENV PATH $PATH:$KYLO_HOME
+COPY ./application.properties /opt/kylo/kylo-services/conf/
+
+RUN echo "Kylo Installation complete"
 
 # add spark and hadoop path to PATH env variable for kylo user
 RUN echo "export PATH=$PATH:/usr/java/default/bin:/usr/local/spark/bin:/usr/local/hadoop/bin" >> /etc/profile
@@ -102,20 +103,6 @@ VOLUME /var/share
 
 COPY core-site.xml.template2 /usr/local/hadoop/etc/hadoop/
 
-
-# be careful below (1) we need to copy hadoop core-site.xml to spark folder when run container since the hostname is generated at this stage and needs to available in core-site.xml.
-# (2) Somehow spark-defaults.conf always overwriten by some process, so we need to append mysql driver when run the container.
-# (3) we need to first start hive than start spark since spark sql always generate hive 1.2 schema and hive2 will have compatible issue with it.
-# CMD 'sed s/HOSTNAME/$HOSTNAME/ /usr/local/hadoop/etc/hadoop/core-site.xml.template2 > /usr/local/hadoop/etc/hadoop/core-site.xml \
-# && /usr/local/hadoop/sbin/stop-dfs.sh && /usr/local/hadoop/sbin/start-dfs.sh \
-# && service mysql start && service elasticsearch start && service activemq start && service nifi start && service hive-server2 start \
-# && cp /usr/local/hadoop/etc/hadoop/core-site.xml /usr/local/spark/conf \
-# && echo "spark.executor.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf \
-# && echo "spark.driver.extraClassPath /usr/local/spark/lib/mysql-connector-java-5.1.41.jar" >> /usr/local/spark/conf/spark-defaults.conf \
-# && source /etc/profile \
-# && /opt/kylo/start-kylo-apps.sh \
-# && bash'
-
 COPY bootstrap.sh /etc/bootstrap.sh
 RUN chown root.root /etc/bootstrap.sh
 RUN chmod 700 /etc/bootstrap.sh
@@ -124,4 +111,3 @@ ENTRYPOINT ["/etc/bootstrap.sh"]
 
 EXPOSE 8400
 EXPOSE 8079
-EXPOSE 8088

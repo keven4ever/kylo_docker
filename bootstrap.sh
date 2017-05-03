@@ -29,6 +29,7 @@ service hive-server2 start
 
 # For hive and spark sql integration, we can only do it at runtime since hostname is required in core-site.xml
 cp $HADOOP_PREFIX/etc/hadoop/core-site.xml $SPARK_HOME/conf
+# Somehow spark-defaults.conf always overwriten by some process, so we need to append mysql driver when run the container.
 echo "spark.executor.extraClassPath $SPARK_HOME/lib/mysql-connector-java-5.1.41.jar" >> $SPARK_HOME/conf/spark-defaults.conf
 echo "spark.driver.extraClassPath $SPARK_HOME/lib/mysql-connector-java-5.1.41.jar" >> $SPARK_HOME/conf/spark-defaults.conf
 
