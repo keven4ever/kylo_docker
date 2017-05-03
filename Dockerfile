@@ -34,10 +34,12 @@ RUN echo "Install Kylo" && service mysql start && /opt/kylo/setup/nifi/install-k
 RUN rm -f /opt/nifi/nifi-1.0.0-bin.tar.gz
 
 RUN echo "Creating the dropzone folder" && mkdir -p /var/dropzone
-#chown nifi:hdfs /var/dropzone
-#chmod 774 /var/dropzone/
+RUN chown nifi /var/dropzone
+RUN chmod 774 /var/dropzone/
 
 RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
+
+COPY sample_data/* /var/sampledata
 
 # echo "Moving sample files"
 # mv /tmp/allevents.csv /var/sampledata
@@ -46,7 +48,7 @@ RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
 # mv /tmp/venue.csv /var/sampledata
 # mv /tmp/toys.sql /var/sampledata
 
-#chown -R kylo:kylo /var/sampledata
+RUN chown -R kylo /var/sampledata
 
 RUN echo "Kylo Installation complete"
 
@@ -95,8 +97,8 @@ RUN cp /usr/local/hive/lib/mysql-connector-java-5.1.41.jar /usr/local/spark/lib
 RUN cp /usr/local/apache-hive-2.1.1-bin/lib/mysql-connector-java-5.1.41.jar /opt/nifi/mysql/
 # ----- Spark-Hive integration finished ---------
 
-VOLUME /var/dropzone
-VOLUME /var/sampledata
+RUN mkdir -p /var/share
+VOLUME /var/share
 
 COPY core-site.xml.template2 /usr/local/hadoop/etc/hadoop/
 
@@ -121,3 +123,5 @@ RUN chmod 700 /etc/bootstrap.sh
 ENTRYPOINT ["/etc/bootstrap.sh"]
 
 EXPOSE 8400
+EXPOSE 8079
+EXPOSE 8088

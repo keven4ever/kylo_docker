@@ -1,7 +1,7 @@
 ## Introduction
 This image is based on vanilla spark image and Setup Wizard Deployment Guide from kylo.io, https://kylo.readthedocs.io/en/latest/installation/KyloSetupWizardDeploymentGuide.html#
 The spark image is the most popular spark image on docker hub, https://hub.docker.com/r/sequenceiq/spark/, so the baseline is:
--   CentOS 6
+-   CentOS 6.5
 -   Hadoop 2.6.0
 -   Spark 1.6.0
 -   JDK 1.5
@@ -13,10 +13,30 @@ docker build -t <image name>:<version> .
 
 ## Lessons learnt
 It takes much more time to build this image, lots of trivial problem, so i decided to write them down and anyone else who wants to install kylo manually might be interested.
--   Although both MySQL and PostgreSQL are supported according to kylo setup wizard, but actually only MySQL works because only Mysql based data source is activated in application.properties.
--   MySQL 5.7.7+ is required since some of index created by kylo has quite long name (>1000), although mysql 5.5 starts to support long index name (check the global parameter "innodb_large_prefix") but it is a tricky parameter to set. MySQL 5.7.7 starts to support long index name offically.
--   JDK 1.7+ required. Although JDK 8.0 is part of Kylo setup wizard steps, but it comes after elasticsearch installation which required JDK 1.7, so in the end i installed JDK 8.0 before start kylo setup wizard and skip JDK installation in kylo
--   Elasticsearch requires to change one kernel parameter "vm.max_map_count", see https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html. Set this parameter requires privileged container (https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities, why sysctl requires privileged container: https://github.com/moby/moby/issues/5703), but it is not possible to build container in privileged mode, so in the end i have to run kylo setup wizard when run container, since this step really take lots of time (mostly affected by network bandwidth), so the start up of container is kind of slow. I need to find out some solution. 
+-	ElasticSearch & JDK 7
+	    - ES requires JDK 7.0+ ; Kylo installation includes JDK 8.0 but after ElasticSearch installation
+	    - Solution: Swap the steps
+-	ElasticSearch requires kernel parameter modification
+	    - Set “vm.max_map_count” to 262144
+	    - Docker 0.11 restrict accessing /proc & /sys for security by default
+	    - Solution 1: Privileged container -> not valid
+	    - Only in runtime (“docker run”) but not in build phase (”docker build”)
+	    - Solution 2: Modify the host parameter, VM runs the Docker daemon, see https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
+-   MySQL & MariaDB
+    - MySQL 5.7.7+ required for long table index
+    - Complicated initial password setup since MySQL 5.7
+    - MariaDB is fork of MySQL with high compatibility, i.e JDBC driver
+-   Spark SQL interact with Hive
+    - Access the same Metastore
+        - Configuration files: hive-site.xml, hdfs-site.xml, core-site.xml, see http://spark.apache.org/docs/1.6.0/sql-programming-guide.html#hive-tables
+        - Classpath issue, spark-defaults.xml, kylo-post installation, MariaDB driver, etc
+    - User access to Hive
+        - Pb: Spark-shell launch by kylo-spark-shell as ”kylo” user
+        - Solution: Create dfs dir “/user/hive/warehouse” and change owner to kylo
+    - SparkSQL and Hive2 schema version incompatibility issue
+        - Pb: independent of the version of Hive, Spark SQL will compile against Hive 1.2.1
+        - Solution: Ignore schema version validation in hive, see hive-site.xml
+
 
 
 ## How to run
@@ -30,12 +50,7 @@ sysctl -w vm.max_map_count=262144
 ctrl-A + D to exist the screen session.
 2.Start container
 ```
-docker run -it -p 8400:8400 -v <local directory to be mapped>:/var/dropzone kylo:0.5
+docker run -it -p 8400:8400 -v <local directory to be mapped>:/var/share kylo:0.7 bash
 ```
-3.after container started, start hive2: 
-```
-hiveserver2 --hiveconf hive.root.logger=FINEST,console&
-/opt/kylo/start-kylo-apps.sh
-```
-4.after few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
-5.After login, import template first, then create a catalogy, then start to import feed
+3.after few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
+5.After login, import template first, then create a categoly, then start to import feed

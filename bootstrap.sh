@@ -33,9 +33,11 @@ echo "spark.executor.extraClassPath $SPARK_HOME/lib/mysql-connector-java-5.1.41.
 echo "spark.driver.extraClassPath $SPARK_HOME/lib/mysql-connector-java-5.1.41.jar" >> $SPARK_HOME/conf/spark-defaults.conf
 
 # sleep 5 sec to make sure nifi is ready
-sleep 5s 
+sleep 10s
 
 /opt/kylo/start-kylo-apps.sh
+
+cp -r /var/sampledata/* /var/dropzone/
 
 
 CMD=${1:-"exit 0"}
