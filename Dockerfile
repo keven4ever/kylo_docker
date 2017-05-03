@@ -39,7 +39,7 @@ RUN chmod 774 /var/dropzone/
 
 RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
 
-COPY sample_data/* /var/sampledata
+COPY sample_data/* /var/sampledata/
 
 # echo "Moving sample files"
 # mv /tmp/allevents.csv /var/sampledata
