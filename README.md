@@ -50,7 +50,7 @@ sysctl -w vm.max_map_count=262144
 ctrl-A + D to exist the screen session.
 2.Start container
 ```
-docker run -it -p 8400:8400 -v <local directory to be mapped>:/var/share kylo:0.7 bash
+docker run -it -p 8079:8079 -p 2222:22 -p 8088:8088 -p 8400:8400 -v <local directory to be mapped>:/var/share kylo:0.7 bash
 ```
 3.after few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
 5.After login, import template first, then create a categoly, then start to import feed
