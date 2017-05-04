@@ -60,6 +60,10 @@ RUN echo "export HIVE_HOME=/usr/local/hive" >> /etc/profile
 RUN echo "export PATH=$PATH:/usr/local/hive/bin">> /etc/profile
 ENV HIVE_HOME /usr/local/hive
 ENV PATH $PATH:$HIVE_HOME/bin
+# Create directory for hive logs
+RUN mkdir -p /var/log/hive
+# Increase PermGen space for hiveserver2 to fix OOM pb.
+COPY ./hive-env.sh /usr/local/hive/conf/
 # Add kylo and nifi user to supergroup otherwise kylo-spark-shell service which runs as kylo user will not be able to create database in hive.
 RUN groupadd supergroup
 RUN usermod -a -G supergroup kylo
@@ -96,3 +100,4 @@ ENTRYPOINT ["/etc/bootstrap.sh"]
 
 EXPOSE 8400
 EXPOSE 8079
+EXPOSE 10000
