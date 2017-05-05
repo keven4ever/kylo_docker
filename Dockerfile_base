@@ -3,21 +3,13 @@ RUN /bin/bash -c 'yum -y install wget java-1.8.0-openjdk-headless.x86_64; exit 0
 COPY conf/MariaDB.repo /etc/yum.repos.d/
 COPY scripts/setup_mysql.sh .
 RUN chmod +x setup_mysql.sh && ./setup_mysql.sh
-#RUN /bin/bash -c 'useradd -r -m -s /bin/bash nifi; \
-#useradd -r -m -s /bin/bash kylo; \
-#useradd -r -m -s /bin/bash activemq'
 
-RUN /bin/bash -c 'useradd -r -m -s /bin/bash nifi; \
-useradd -r -m -s /bin/bash kylo; \
-useradd -r -m -s /bin/bash activemq'
-
-# RUN /bin/bash -c 'echo \"Downloading the RPM\";\
-# wget http://bit.ly/2oVaQJE -O kylo-0.8.0.1.rpm;\
-# rpm -ivh kylo-0.8.0.1.rpm;\
-# rm kylo-0.8.0.1.rpm'
+# RUN /bin/bash -c 'useradd -r -m -s /bin/bash nifi; \
+# useradd -r -m -s /bin/bash kylo; \
+# useradd -r -m -s /bin/bash activemq'
 
 RUN /bin/bash -c 'echo \"Downloading the RPM\";\
-wget https://s3-us-west-2.amazonaws.com/kylo-io/releases/rpm/0.8.0.1/kylo-0.8.0.1-1.noarch.rpm -O kylo-0.8.0.1.rpm;\
+wget http://bit.ly/2oVaQJE -O kylo-0.8.0.1.rpm;\
 rpm -ivh kylo-0.8.0.1.rpm;\
 rm kylo-0.8.0.1.rpm'
 
@@ -27,34 +19,30 @@ RUN echo "Install Elasticsearch" && /opt/kylo/setup/elasticsearch/install-elasti
 
 RUN echo "Install activemq" && /opt/kylo/setup/activemq/install-activemq.sh
 
-RUN echo "Install NiFi" && /opt/kylo/setup/nifi/install-nifi.sh
+# RUN echo "Install NiFi" && /opt/kylo/setup/nifi/install-nifi.sh
 
-RUN echo "Install Kylo" && service mysql start && /opt/kylo/setup/nifi/install-kylo-components.sh
+# RUN echo "Install Kylo" && service mysql start && /opt/kylo/setup/nifi/install-kylo-components.sh
 
 RUN rm -f /opt/nifi/nifi-1.0.0-bin.tar.gz
 
-RUN echo "Creating the dropzone folder" && mkdir -p /var/dropzone
-RUN chown nifi:nifi /var/dropzone
-RUN chmod 774 /var/dropzone/
+# RUN echo "Creating the dropzone folder" && mkdir -p /var/dropzone
+# RUN chown nifi:nifi /var/dropzone
+# RUN chmod 774 /var/dropzone/
 
-RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
+# RUN echo "Creating the sample data folder" && mkdir -p /var/sampledata
 
-COPY sample_data/* /var/sampledata/
+# COPY sample_data/* /var/sampledata/
 
-RUN chown -R kylo:kylo /var/sampledata
+# RUN chown -R kylo:kylo /var/sampledata
 
-ENV KYLO_HOME=/opt/kylo
-ENV PATH $PATH:$KYLO_HOME
-COPY conf/application.properties /opt/kylo/kylo-services/conf/
-# Align the same security.jwt.key as kylo-ui which is generated in kylo post-installation
-RUN jwtkey=$(grep 'security.jwt.key' /opt/kylo/kylo-ui/conf/application.properties | awk -F  "=" '/1/ {print $2}') && sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" /opt/kylo/kylo-services/conf/application.properties
+# ENV KYLO_HOME=/opt/kylo
+# ENV PATH $PATH:$KYLO_HOME
+# COPY conf/application.properties /opt/kylo/kylo-services/conf/
 
-RUN echo "Kylo Installation complete"
+# RUN echo "Kylo Installation complete"
 
 # add spark and hadoop path to PATH env variable for kylo user
 RUN echo "export PATH=$PATH:/usr/java/default/bin:/usr/local/spark/bin:/usr/local/hadoop/bin" >> /etc/profile
-#COPY ./setup_kylo.sh .
-#RUN chmod +x setup_kylo.sh && ./setup_kylo.sh
 
 # Install hive
 RUN wget http://apache.mirrors.spacedump.net/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz
@@ -91,7 +79,7 @@ RUN cp /usr/local/hadoop/etc/hadoop/hdfs-site.xml /usr/local/spark/conf
 RUN cp /usr/local/hive/conf/hive-site.xml /usr/local/spark/conf
 RUN cp /usr/local/hive/lib/mysql-connector-java-5.1.41.jar /usr/local/spark/lib
 # Make mysql driver available to kylo-spark-shell
-RUN cp /usr/local/apache-hive-2.1.1-bin/lib/mysql-connector-java-5.1.41.jar /opt/nifi/mysql/
+# RUN cp /usr/local/apache-hive-2.1.1-bin/lib/mysql-connector-java-5.1.41.jar /opt/nifi/mysql/
 # ----- Spark-Hive integration finished ---------
 
 RUN mkdir -p /var/share
@@ -99,13 +87,10 @@ VOLUME /var/share
 
 COPY conf/core-site.xml.template2 /usr/local/hadoop/etc/hadoop/
 
-COPY scripts/bootstrap.sh /etc/bootstrap.sh
+COPY scripts/bootstrap_base.sh /etc/bootstrap.sh
 RUN chown root.root /etc/bootstrap.sh
 RUN chmod 700 /etc/bootstrap.sh
 
 ENTRYPOINT ["/etc/bootstrap.sh"]
 
-EXPOSE 8400
-EXPOSE 8079
 EXPOSE 10000
-EXPOSE 3306
