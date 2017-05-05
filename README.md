@@ -9,7 +9,7 @@ The spark image is the most popular spark image on docker hub, https://hub.docke
 Most of them are a little bit old, i agree, which brings some pb for me, see below
 
 ## How to build image
-docker build -t <image name>:<version> .
+docker build -t "image name":"image version" .
 
 ## Lessons learnt
 It takes much more time to build this image, lots of trivial problem, so i decided to write them down and anyone else who wants to install kylo manually might be interested.
@@ -50,7 +50,7 @@ sysctl -w vm.max_map_count=262144
 ctrl-A + D to exist the screen session.
 2.Start container
 ```
-docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 8088:8088 -p 10000:10000 keven4ever/kylo_docker:latest bash
+docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 3306:3306 -p 10000:10000 keven4ever/kylo_docker:latest bash
 ```
 3.after few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
 4.After login, import template first, then create a categoly, then start to import feed.
