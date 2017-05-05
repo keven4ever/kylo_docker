@@ -9,7 +9,7 @@ The spark image is the most popular spark image on docker hub, https://hub.docke
 Most of them are a little bit old, i agree, which brings some pb for me, see below
 
 ## How to build image
-docker build -t <image name>:<version> .
+docker build -t <image_name>:<image_version> .
 
 ## Lessons learnt
 It takes much more time to build this image, lots of trivial problem, so i decided to write them down and anyone else who wants to install kylo manually might be interested.
@@ -26,6 +26,8 @@ It takes much more time to build this image, lots of trivial problem, so i decid
     - MySQL 5.7.7+ required for long table index
     - Complicated initial password setup since MySQL 5.7
     - MariaDB is fork of MySQL with high compatibility, i.e JDBC driver
+-   Hive server related
+    - By default, Hiverserver2 will suffer with insufficient PermGen space, then it ends up connection refuse when connects it through JDBC. So, you have to add some JVM options in hive-site.xml to increase the PermGen space.
 -   Spark SQL interact with Hive
     - Access the same Metastore
         - Configuration files: hive-site.xml, hdfs-site.xml, core-site.xml, see http://spark.apache.org/docs/1.6.0/sql-programming-guide.html#hive-tables
@@ -36,11 +38,11 @@ It takes much more time to build this image, lots of trivial problem, so i decid
     - SparkSQL and Hive2 schema version incompatibility issue
         - Pb: independent of the version of Hive, Spark SQL will compile against Hive 1.2.1
         - Solution: Ignore schema version validation in hive, see hive-site.xml
-
-
+-   kylo related
+    - There is a common security key namely "security.jwt.key" configed in application.properties of both kylo-ui and kylo-services which are generated in kylo post-installation, they should have the same value, otherwise there will be some HTTP 401 Unauthorized error. So be careful when replace the application.properties. 
 
 ## How to run
-1.change "vm.max_map_count" kernel varialble in the VM running docker daemon: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode.
+1. Change "vm.max_map_count" kernel varialble in the VM running docker daemon: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode.
 ```
 screen ~/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/tty
 login
@@ -48,9 +50,9 @@ root
 sysctl -w vm.max_map_count=262144
 ```
 ctrl-A + D to exist the screen session.
-2.Start container
+2. Start container
 ```
 docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 8088:8088 -p 10000:10000 keven4ever/kylo_docker:latest bash
 ```
-3.after few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
-4.After login, import template first, then create a categoly, then start to import feed.
+3. After few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
+4. After login, import template first, then create a categoly, then start to import feed.
