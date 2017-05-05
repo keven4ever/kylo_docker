@@ -11,13 +11,8 @@ RUN /bin/bash -c 'useradd -r -m -s /bin/bash nifi; \
 useradd -r -m -s /bin/bash kylo; \
 useradd -r -m -s /bin/bash activemq'
 
-# RUN /bin/bash -c 'echo \"Downloading the RPM\";\
-# wget http://bit.ly/2oVaQJE -O kylo-0.8.0.1.rpm;\
-# rpm -ivh kylo-0.8.0.1.rpm;\
-# rm kylo-0.8.0.1.rpm'
-
 RUN /bin/bash -c 'echo \"Downloading the RPM\";\
-wget https://s3-us-west-2.amazonaws.com/kylo-io/releases/rpm/0.8.0.1/kylo-0.8.0.1-1.noarch.rpm -O kylo-0.8.0.1.rpm;\
+wget http://bit.ly/2oVaQJE -O kylo-0.8.0.1.rpm;\
 rpm -ivh kylo-0.8.0.1.rpm;\
 rm kylo-0.8.0.1.rpm'
 
@@ -27,11 +22,7 @@ RUN echo "Install Elasticsearch" && /opt/kylo/setup/elasticsearch/install-elasti
 
 RUN echo "Install activemq" && /opt/kylo/setup/activemq/install-activemq.sh
 
-RUN echo "Install NiFi" && /opt/kylo/setup/nifi/install-nifi.sh
-
-RUN echo "Install Kylo" && service mysql start && /opt/kylo/setup/nifi/install-kylo-components.sh
-
-RUN rm -f /opt/nifi/nifi-1.0.0-bin.tar.gz
+RUN echo "Install NiFi" && /opt/kylo/setup/nifi/install-nifi.sh && echo "Install Kylo" && service mysql start && /opt/kylo/setup/nifi/install-kylo-components.sh && rm -f /opt/nifi/nifi-1.0.0-bin.tar.gz
 
 RUN echo "Creating the dropzone folder" && mkdir -p /var/dropzone
 RUN chown nifi:nifi /var/dropzone
@@ -53,13 +44,9 @@ RUN echo "Kylo Installation complete"
 
 # add spark and hadoop path to PATH env variable for kylo user
 RUN echo "export PATH=$PATH:/usr/java/default/bin:/usr/local/spark/bin:/usr/local/hadoop/bin" >> /etc/profile
-#COPY ./setup_kylo.sh .
-#RUN chmod +x setup_kylo.sh && ./setup_kylo.sh
 
 # Install hive
-RUN wget http://apache.mirrors.spacedump.net/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz
-RUN tar xvf apache-hive-2.1.1-bin.tar.gz
-RUN rm ./apache-hive-2.1.1-bin.tar.gz
+RUN wget http://apache.mirrors.spacedump.net/hive/hive-2.1.1/apache-hive-2.1.1-bin.tar.gz && tar xvf apache-hive-2.1.1-bin.tar.gz && rm ./apache-hive-2.1.1-bin.tar.gz
 RUN mv ./apache-hive-2.1.1-bin /usr/local/
 RUN ln -s /usr/local/apache-hive-2.1.1-bin /usr/local/hive
 COPY conf/hive-site.xml /usr/local/hive/conf
