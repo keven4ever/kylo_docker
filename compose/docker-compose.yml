@@ -1,0 +1,14 @@
+version: '3'
+services:
+  kylo:
+    image: kylo
+    ports:
+    - "8400:8400"
+    - "8079:8079"
+    - "10000:10000"
+    links:
+    - mysql
+  mysql:
+    image: kylo_mysql
+    ports:
+    - "3306:3306"
