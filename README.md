@@ -63,7 +63,7 @@ vm.max_map_count = 262144
 ```
 2. Start container
 ```
-docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 3306:3306 -p 10000:10000 keven4ever/kylo_docker:0.8.0.1 bash
+docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 3306:3306 -p 10000:10000 keven4ever/kylo_docker:kylo-0.8.0.1 bash
 ```
 3. After few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
 4. After login, import template first, then create a categoly, then start to import feed.
