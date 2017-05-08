@@ -44,16 +44,26 @@ It takes much more time to build this image, lots of trivial problem, so i decid
 
 ## How to run
 1. Change "vm.max_map_count" kernel varialble in the VM running docker daemon: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode.
+So if you are using macbook with Docker for Mac installed (note, docker for mac https://docs.docker.com/docker-for-mac/install/ is different from previous generation of docker on mac which is Docker machine https://docs.docker.com/machine/), then you can follow steps below
 ```
+# Launch a termal in your macbook and start a screen session to connect to the VM which is the host of docker containers
 screen ~/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/tty
-login
-# input username: root password empty
-sysctl -w vm.max_map_count=262144
+# Click "enter" once to get shell promot, then type in shell command "login"
+/ # login
+# input login credential, root/<empty password>
+moby login: root
+# Input empty pwd by click enter
+# Set the parameter
+moby:~#sysctl -w vm.max_map_count=262144
+# Then you can check if this parameter is set:
+moby:~# sysctl vm.max_map_count
+# You should see sth like below
+vm.max_map_count = 262144
+# At the end exit the screen session by type in Ctrl-A + D to exist the screen session, Hold Ctrl and A together then click D.
 ```
-ctrl-A + D to exist the screen session.
 2. Start container
 ```
-docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 3306:3306 -p 10000:10000 keven4ever/kylo_docker:latest bash
+docker run -it -v <absoluate path of your local directory to be mounted to container>:/var/share -p 8400:8400 -p 8079:8079 -p 3306:3306 -p 10000:10000 keven4ever/kylo_docker:0.8.0.1 bash
 ```
 3. After few mins, access http://localhost:8400 from host browser and login with dladmin/thinkbig
 4. After login, import template first, then create a categoly, then start to import feed.
